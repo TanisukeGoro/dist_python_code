@@ -1,13 +1,9 @@
 import requests
 import bs4
-import re
-import sys
-import os
-import math
-import time
 import pandas as pd
 import numpy as np
-import asyncio
+import time
+import asyncio #　今後非同期処理を頑張るならこれを使いたい
 from module.progress import progress_bar
 
 REQUEST_EXEPTION_REPORT_LIST = []
@@ -28,11 +24,11 @@ def get_html_soup(url):
         return res.status_code
     return bs4.BeautifulSoup(res.text, "html.parser")
 
-def get_csv(name): return pd.read_csv(name)
+def get_csv(name):
+    return pd.read_csv(name)
 
 def count_form(document):
     return len(document.findAll('form'))
-
 
 def request_exception(status, list):
     list.insert(1,status)
@@ -47,7 +43,6 @@ def not_exist_exception(list):
 def not_connection_exception(list):
     exception = pd.DataFrame([list], columns=['name', 'url'])
     exception.to_csv('not_connection_exception.csv', mode='a', header=False)
-
 
 def indexing_input_label_pair(inputs, labels):
     input_ids = [i.get('id') for i in inputs]
@@ -64,10 +59,6 @@ def indexing_input_label_pair(inputs, labels):
             list.append([index, ''])
     return list
 
-# id, name, type, value, _class
-# id
-
-
 def get_input_data(input):
     id = input.get('id')
     name = input.get('name')
@@ -82,7 +73,6 @@ def get_label_data(label):
     _class = label.get('class')
     text = label.text
     return [id, form, _class, text]
-
 
 def parse_document(document, list):
     global PARSE_FORM_LIST
@@ -101,7 +91,6 @@ def parse_document(document, list):
     PARSE_FORM_LIST = PARSE_FORM_LIST + attributes
     return attributes
 
-
 def handleDocument(document, list):
     list = list.tolist()
     if document is None: return not_connection_exception(list)
@@ -109,8 +98,6 @@ def handleDocument(document, list):
     if count_form(document) == 0: return not_exist_exception(list)
     if count_form(document) == 1: return parse_document(document, list)
     if count_form(document) > 1: return multi_form_exception(list)
-
-
 
 def main():
     global PARSE_FORM_LIST
@@ -151,10 +138,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# csvを読み込む
-# urlをgetする
-# fromの数をカウント => 1個以上ならmulti_form_page.csvに吐き出す
-#                 => formがなければnil_form_page.csvに吐き出す
-#                 => 1つのページだけinpuを取得する
-#                 => formの中にtableがあるか否か
